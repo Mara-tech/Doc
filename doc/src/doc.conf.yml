@@ -1,0 +1,58 @@
+properties:
+  ipify:
+    url: https://api.ipify.org/?format=json
+  github:
+      prod:
+        base_url: https://api.github.com/
+      dev:
+        base_url: https://dev.api.github.com/
+
+
+services:
+  - public-ip :
+      - type: api.get.info # api.rest.get.check / cmd.status / cmd.parse / api.graphql.get
+      - url : ${ipify.url}
+  - github-user-info :
+      - url: ${github.${env}.base_url}/users/${username}
+  - github-up :
+      - url: ${github.${env}.base_url}
+  - aws-cli-version:
+      - command: "aws --version"
+  - aws-s3-ls :
+      - command: "aws s3 ls"
+
+scenarii:
+  github-and-aws :
+    - name: github-up
+      next-if:
+        OK:
+          - name: github-user-info
+        KO:
+          - ${scenarii.get-public-ip}
+    - name: aws-s3-ls
+      next-if:
+        KO:
+          - name: aws-cli-version
+  github-only:
+    - name: github-up
+      next-if:
+        OK:
+            - name: github-user-info
+  get-public-ip:
+    - name: public-ip
+
+
+
+environments:
+  prod:
+    scenarii:
+    - github-and-aws
+    - github-only
+    - get-public-ip
+  dev:
+    scenarii:
+    - github-only
+    - get-public-ip
+    properties:
+      foo: bar
+
