@@ -31,8 +31,7 @@ scenarii:
       next-if:
         OK:
           - name: github-user-info
-        KO:
-          - ${scenarii.get-public-ip}
+        KO: ${scenarii.get-public-ip}
     - name: aws-s3-ls
       next-if:
         KO:
@@ -44,7 +43,6 @@ scenarii:
             - name: github-user-info
   get-public-ip:
     - name: public-ip
-
 
 
 environments:
@@ -59,4 +57,3 @@ environments:
     - get-public-ip
     properties:
       foo: bar
-

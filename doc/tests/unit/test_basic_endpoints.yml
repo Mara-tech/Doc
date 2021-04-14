@@ -27,8 +27,7 @@ scenarii:
       next-if:
         OK:
           - name: github-user-info
-        KO:
-          - ${scenarii.get-public-ip}
+        KO: ${scenarii.get-public-ip}
     - name: aws-s3-ls
       next-if:
         KO:

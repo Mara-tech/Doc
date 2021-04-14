@@ -94,8 +94,8 @@ class GetScenarii(Resource):
     def get(self, environment):
         try:
             return format_response(doc.get_scenarii(environment))
-        except KeyError as ke:
-            return format_response({'error': str(ke)}, 400)
+        except LookupError as br:
+            return format_response({'error': str(br)}, 400)
         except Exception as exc:
             api.abort(500, exc)
 
@@ -112,6 +112,25 @@ class GetProperties(Resource):
         args = self.parser.parse_args()
         try:
             return format_response(doc.get_properties(args['flat']))
+        except Exception as exc:
+            api.abort(500, exc)
+
+
+@api.route('/scenario/<string:scenario_name>')
+@api.doc(description="Get details on scenario plan",
+              responses={200: 'scenario details'})
+class GetScenario(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('environment', help="A single environment name", required=False)
+    parser.add_argument('resolve_placeholders', type=inputs.boolean, help="Whether to replace placeholders by values, when possible.", required=False, default=True)
+
+    @api.expect(parser)
+    def get(self, scenario_name):
+        args = self.parser.parse_args()
+        try:
+            return format_response(doc.get_scenario(scenario_name, env=args['environment'], solving_ph=args['resolve_placeholders']))
+        except LookupError as br:
+            return format_response({'error': str(br)}, 400)
         except Exception as exc:
             api.abort(500, exc)
 

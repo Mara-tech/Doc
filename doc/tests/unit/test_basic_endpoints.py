@@ -136,3 +136,60 @@ def test_get_properties(get_properties_event_and_expected, mocker):
     assert ret["statusCode"] == 200
     assert ret["body"] is not None
     assert json.loads(ret["body"]) == expected
+
+
+@pytest.fixture(params=list((scenario, env, resolve)
+                            for scenario in ['github-and-aws']
+                            for env in [None, 'prod','dev']
+                            for resolve in [True, False]))
+def get_scenario_event_and_expected(request):
+    scenario_name = request.param[0]
+    env_query_param = request.param[1]
+    resolve_placeholder_query_param = request.param[2]
+    qp = {'resolve_placeholders': resolve_placeholder_query_param}
+    if env_query_param is not None:
+        qp['environment'] = env_query_param
+
+    event = generate_event(f"/doc/scenario/{scenario_name}",
+                           query_params=qp)
+    if env_query_param == 'dev':
+        expected = {'error': 'Scenario github-and-aws is not defined for environment dev.'}
+        expected_status_code = 400
+    else:
+        expected = {
+            'github-and-aws': [
+                {
+                    'name': 'github-up',
+                    'next-if': {
+                        'OK': [
+                            {'name': 'github-user-info'}
+                        ],
+                        'KO': "${scenarii.get-public-ip}" if resolve_placeholder_query_param is False
+                        else [{'name': 'public-ip'}]
+                    }
+                },
+                {
+                    'name': 'aws-s3-ls',
+                    'next-if': {
+                        'KO': [
+                            {'name': 'aws-cli-version'}
+                        ]
+                    }
+                }
+            ]
+        }[scenario_name]
+        expected_status_code = 200
+
+    return event, expected, expected_status_code
+
+
+def test_get_scenario(get_scenario_event_and_expected, mocker):
+    req = get_scenario_event_and_expected[0]
+    expected = get_scenario_event_and_expected[1]
+    expected_status_code = get_scenario_event_and_expected[2]
+    ret = app.app(req, "")
+    data = json.loads(ret["body"])
+
+    assert ret["statusCode"] == expected_status_code
+    assert ret["body"] is not None
+    assert json.loads(ret["body"]) == expected
