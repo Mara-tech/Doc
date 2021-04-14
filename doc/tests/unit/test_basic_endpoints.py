@@ -5,7 +5,9 @@ import app
 app.set_conf_filename(str(__file__).replace('.py', '.yml'))
 
 
-def generate_event(path='/doc/hello', method='GET'):
+def generate_event(path='/doc/hello', method='GET', query_params=None):
+    if query_params is None:
+        query_params = {}
     return {
         "body": '{}',
         "resource": "/{proxy+}",
@@ -31,7 +33,7 @@ def generate_event(path='/doc/hello', method='GET'):
             },
             "stage": "prod",
         },
-        "queryStringParameters": {},
+        "queryStringParameters": query_params,
         "headers": {
             "Via": "1.1 08f323deadbeefa7af34d5feb414ce27.cloudfront.net (CloudFront)",
             "Accept-Language": "en-US,en;q=0.8",
@@ -57,6 +59,7 @@ def generate_event(path='/doc/hello', method='GET'):
         "stageVariables": {},
         "path": path,
     }
+
 
 @pytest.fixture()
 def get_envs_event():
@@ -87,6 +90,46 @@ def get_scenarii_event_and_expected(request):
 def test_get_scenarii(get_scenarii_event_and_expected, mocker):
     req = get_scenarii_event_and_expected[0]
     expected = get_scenarii_event_and_expected[1]
+    ret = app.app(req, "")
+    data = json.loads(ret["body"])
+
+    assert ret["statusCode"] == 200
+    assert ret["body"] is not None
+    assert json.loads(ret["body"]) == expected
+
+
+@pytest.fixture(params=[None, False, True])
+def get_properties_event_and_expected(request):
+    flatten_query_param = request.param
+    event = generate_event(f"/doc/properties",
+                           query_params={'flat': flatten_query_param} if flatten_query_param is not None else {})
+    DEFAULT_BEHAVIOR = False
+    expected = {
+        False: {
+            'ipify':
+                {'url': 'https://api.ipify.org/?format=json'},
+            'github': {
+                'prod': {
+                    'base_url': 'https://api.github.com/'
+                },
+                'dev': {
+                    'base_url': 'https://dev.api.github.com/'
+                }
+            }
+        },
+        True: {
+            'ipify.url': 'https://api.ipify.org/?format=json',
+            'github.prod.base_url': 'https://api.github.com/',
+            'github.dev.base_url': 'https://dev.api.github.com/'
+        }
+    }[flatten_query_param if flatten_query_param is not None else DEFAULT_BEHAVIOR]
+
+    return event, expected
+
+
+def test_get_properties(get_properties_event_and_expected, mocker):
+    req = get_properties_event_and_expected[0]
+    expected = get_properties_event_and_expected[1]
     ret = app.app(req, "")
     data = json.loads(ret["body"])
 

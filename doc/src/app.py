@@ -1,6 +1,7 @@
 from flask_lambda import FlaskLambda
 import time
-from flask_restplus import Api, Resource, fields, reqparse
+from flask import request
+from flask_restplus import Api, Resource, fields, reqparse, inputs
 import yaml
 import json
 import doc_log as log
@@ -95,6 +96,22 @@ class GetScenarii(Resource):
             return format_response(doc.get_scenarii(environment))
         except KeyError as ke:
             return format_response({'error': str(ke)}, 400)
+        except Exception as exc:
+            api.abort(500, exc)
+
+
+@api.route('/properties')
+@api.doc(description="Get properties dictionary",
+              responses={200: 'list of properties'})
+class GetProperties(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('flat', type=inputs.boolean, help="Whether to keep tree structure (default) or flatten as a map.", required=False, default=False)
+
+    @api.expect(parser)
+    def get(self):
+        args = self.parser.parse_args()
+        try:
+            return format_response(doc.get_properties(args['flat']))
         except Exception as exc:
             api.abort(500, exc)
 

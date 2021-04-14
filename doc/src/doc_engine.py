@@ -1,6 +1,6 @@
 import yaml
 import doc_log as log
-
+import utils
 
 class DocEngine():
 
@@ -27,6 +27,10 @@ class DocEngine():
         return self.doc_conf.get('properties', {})
 
     @property
+    def flattened_properties(self):
+        return utils.flatten(self.properties)
+
+    @property
     def services(self):
         return self.doc_conf.get('services', {})
 
@@ -34,10 +38,10 @@ class DocEngine():
     def scenarii(self):
         return self.doc_conf.get('scenarii', {})
 
-    def get_environments(self):
+    def get_environments(self, **kwargs):
         return list(k for k, v in self.environments.items())
 
-    def get_services(self, args):
+    def get_services(self, args, **kwargs):
         """
         TODO by introspection of scenarii
         :param args:
@@ -54,10 +58,16 @@ class DocEngine():
         # return self.environments[requested_env]['services']
         return {}
 
-    def get_scenarii(self, requested_env):
+    def get_scenarii(self, requested_env, **kwargs):
         if requested_env not in self.environments:
             raise KeyError(f"Environment {requested_env} is not configured, thus unknown.")
         requested_env_conf = self.environments[requested_env]
         if 'scenarii' not in requested_env_conf:
             raise KeyError(f"Environment {requested_env} has no configured scenarii. Please add a 'scenarii' entry in configuration.")
         return self.environments[requested_env]['scenarii']
+
+    def get_properties(self, flat:bool=False, **kwargs):
+        if flat:
+            return self.flattened_properties
+        else:
+            return self.properties

@@ -9,17 +9,21 @@ properties:
 
 
 services:
-  - public-ip :
-      - type: api.get.info # api.rest.get.check / cmd.status / cmd.parse / api.graphql.get
-      - url : ${ipify.url}
-  - github-user-info :
-      - url: ${github.${env}.base_url}/users/${username}
-  - github-up :
-      - url: ${github.${env}.base_url}
-  - aws-cli-version:
-      - command: "aws --version"
-  - aws-s3-ls :
-      - command: "aws s3 ls"
+  public-ip:
+    type: api.get.info # api.rest.get.check / cmd.status / cmd.parse / api.graphql.get
+    url : ${ipify.url}
+  github-user-info:
+    url: ${github.${env}.base_url}/users/${username}
+  github-up:
+    url: ${github.${env}.base_url}
+  aws-cli-version:
+    command: "aws --version"
+  aws-s3-ls:
+    command: "aws s3 ls"
+  orchestrator:
+    url: ${orchestrator.${env}.url}
+  orchestrator-ra:
+    url: ${orchestrator-ra.${env}.url}
 
 scenarii:
   github-and-aws :
