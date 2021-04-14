@@ -7,11 +7,13 @@ import doc_log as log
 from doc_engine import DocEngine
 
 
+conf_filename = 'doc.conf.yml'
+doc = DocEngine(conf_filename)
 
-with open('doc.conf.yml', 'r') as stream:
-    doc_conf = yaml.load(stream, Loader=yaml.FullLoader)
 
-doc = DocEngine(doc_conf)
+# Workaround to set conf filename for unit tests
+def set_conf_filename(fn):
+    doc.conf_filename = fn
 
 
 # --------------------
@@ -53,7 +55,7 @@ def format_response(data=None, status_code=200):
               responses={200: 'test ok'})
 class HelloWorld(Resource):
     def get(self):
-        return format_response("Hello World " + str(time.time()))
+        return format_response(f"Hello World {int(time.time())}")
 
 @api.route('/environments')
 @api.doc(description="Get all defined environments",

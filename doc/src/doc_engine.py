@@ -1,25 +1,41 @@
+import yaml
+import doc_log as log
 
 
 class DocEngine():
 
-    def __init__(self, doc_conf=None):
+    def __init__(self, conf_filename):
         super(DocEngine, self).__init__()
+        self.conf_filename = conf_filename
+
+    @property
+    def doc_conf(self):
+        with open(self.conf_filename, 'r') as file:
+            log.debug(f'Parsing conf from {file.name}.')
+            doc_conf = yaml.load(file, Loader=yaml.FullLoader)
+
         if doc_conf is None:
             doc_conf = {}
+        return doc_conf
 
-        self.properties = doc_conf.get('properties', {})
-        self.services = doc_conf.get('services', {})
-        self.scenarii = doc_conf.get('scenarii', {})
-        self.environments = doc_conf.get('environments', {})
+    @property
+    def environments(self):
+        return self.doc_conf.get('environments', {})
 
-        """
-        or ?
-        for k,v in doc_conf.items():
-            setattr(self, k, v)
-        """
+    @property
+    def properties(self):
+        return self.doc_conf.get('properties', {})
+
+    @property
+    def services(self):
+        return self.doc_conf.get('services', {})
+
+    @property
+    def scenarii(self):
+        return self.doc_conf.get('scenarii', {})
 
     def get_environments(self):
-        return list(k for k,v in self.environments.items())
+        return list(k for k, v in self.environments.items())
 
     def get_services(self, args):
         """
@@ -45,4 +61,3 @@ class DocEngine():
         if 'scenarii' not in requested_env_conf:
             raise KeyError(f"Environment {requested_env} has no configured scenarii. Please add a 'scenarii' entry in configuration.")
         return self.environments[requested_env]['scenarii']
-

@@ -2,15 +2,17 @@ import yaml
 import logging
 import logging.config
 
+try:
+    with open('logging.yml', 'r') as stream:
+        config = yaml.load(stream, Loader=yaml.FullLoader)
 
-with open('logging.yml', 'r') as stream:
-    config = yaml.load(stream, Loader=yaml.FullLoader)
+    logging.config.dictConfig(config)
+    logger = logging.getLogger('awsLogger')
+except FileNotFoundError as no_file:
+    logger = logging.root
 
-logging.config.dictConfig(config)
-aws_logger = logging.getLogger('awsLogger')
 
-
-def jordan_log(msg, tag=None, level=logging.INFO, logger=aws_logger, **kwargs):
+def jordan_log(msg, tag=None, level=logging.INFO, logger=logger, **kwargs):
     if msg is None:
         raise KeyError('Must provide a msg to log')
     message = f'[{tag}] {msg}' if tag is not None else msg
