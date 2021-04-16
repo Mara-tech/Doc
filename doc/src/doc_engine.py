@@ -2,6 +2,8 @@ import yaml
 import doc_log as log
 import utils
 import time
+import toolbox
+
 
 def parameter(param):
     return '${' + param + '}'
@@ -66,6 +68,7 @@ def solve_placeholders(data, **kwargs):
         raise NotImplementedError(f'Data {data} of type {type(data)} is not handled by solve_placeholders')
 
 
+STEP_NAME_KEY = 'name'
 CONDITIONAL_NEXT_STEP_KEY = 'next-if'
 EXPLODE_SPLIT = ','
 
@@ -120,6 +123,19 @@ def next_steps(step: dict, last_step_status: str):
     conditional_next_dict = step.get(CONDITIONAL_NEXT_STEP_KEY, {})
     if last_step_status in conditional_next_dict:
         return conditional_next_dict[last_step_status]
+
+
+def run(scenario: list, output: dict, **kwargs):
+    for step in scenario:
+        step_status = execute_step(step, output, **kwargs)
+        run(next_steps(step, step_status), output, **kwargs)
+
+
+def execute_step(step_struct: dict, output: dict, step_cls=None, **kwargs):
+    if step_cls is None:
+        step_cls = toolbox.find_tool(step_struct, **kwargs)
+    step = step_cls(step_struct, **kwargs)
+    return step.execute(output, **kwargs)
 
 
 class DocEngine:
@@ -207,11 +223,6 @@ class DocEngine:
     def run_scenario(self, scenario_name, env='default', solving_ph=True, **kwargs):
         scenario = self.get_scenario(scenario_name, env, solving_ph, **kwargs)
         output = {'scenario': scenario_name, 'environment': env, 'timestamp': int(time.time())}
-        self.run(scenario, output, **kwargs)
+        run(scenario, output, **kwargs)
         return output
 
-    def run(self, scenario: list, output: dict, **kwargs):
-        for step in scenario:
-            step_output, step_status = self.execute(step, **kwargs)
-            self.write(step_output, output, **kwargs)
-            self.run(next_steps(step, step_status), output, **kwargs)

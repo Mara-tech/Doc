@@ -12,7 +12,7 @@ except FileNotFoundError as no_file:
     logger = logging.root
 
 
-def jordan_log(msg, tag=None, level=logging.INFO, logger=logger, **kwargs):
+def doc_log(msg, tag=None, level=logging.INFO, logger=logger, **kwargs):
     if msg is None:
         raise KeyError('Must provide a msg to log')
     message = f'[{tag}] {msg}' if tag is not None else msg
@@ -20,12 +20,16 @@ def jordan_log(msg, tag=None, level=logging.INFO, logger=logger, **kwargs):
 
 
 def debug(message):
-    jordan_log(message, level=logging.DEBUG)
+    doc_log(message, level=logging.DEBUG)
 
 
 def info(message):
-    jordan_log(message, level=logging.INFO)
+    doc_log(message, level=logging.INFO)
+
+
+def warn(message):
+    doc_log(message, level=logging.WARN)
 
 
 def error(message):
-    jordan_log(message, level=logging.ERROR)
+    doc_log(message, level=logging.ERROR)
