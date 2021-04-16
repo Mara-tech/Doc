@@ -119,7 +119,7 @@ class GetProperties(Resource):
 @api.route('/scenario/<string:scenario_name>')
 @api.doc(description="Get details on scenario plan",
               responses={200: 'scenario details'})
-class GetScenario(Resource):
+class Scenario(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('environment', help="A single environment name", required=False)
     parser.add_argument('resolve_placeholders', type=inputs.boolean, help="Whether to replace placeholders by values, when possible.", required=False, default=True)
@@ -129,6 +129,16 @@ class GetScenario(Resource):
         args = self.parser.parse_args()
         try:
             return format_response(doc.get_scenario(scenario_name, env=args['environment'], solving_ph=args['resolve_placeholders']))
+        except LookupError as br:
+            return format_response({'error': str(br)}, 400)
+        except Exception as exc:
+            api.abort(500, exc)
+
+    @api.expect(parser)
+    def post(self, scenario_name):
+        args = self.parser.parse_args()
+        try:
+            return format_response(doc.run_scenario(scenario_name, env=args['environment'], solving_ph=args['resolve_placeholders']))
         except LookupError as br:
             return format_response({'error': str(br)}, 400)
         except Exception as exc:

@@ -4,7 +4,7 @@ import doc_engine
 def test_parameter():
     actual = doc_engine.parameter('env')
     expected = '${env}'
-    assert expected == actual
+    assert actual == expected
 
 
 def test_merge_dicos():
@@ -15,7 +15,7 @@ def test_merge_dicos():
                 'name': 'person',
                 'job': 'cow-boy',
                 'env': 'prod'}
-    assert expected == actual
+    assert actual == expected
 
 
 def test_merge_and_flatten():
@@ -31,7 +31,7 @@ def test_merge_and_flatten():
                 'state.zip': 123,
                 'state.city': ['San Andreas', 'Las Vegas'],
                 'env': 'prod'}
-    assert expected == actual
+    assert actual == expected
 
 
 def test_replace():
@@ -39,7 +39,7 @@ def test_replace():
     dico = {'who': 'world'}
     actual = doc_engine.replace(data, **dico)
     expected = 'hello world'
-    assert expected == actual
+    assert actual == expected
 
 
 def test_single_replace():
@@ -47,7 +47,7 @@ def test_single_replace():
     dico = {'who': 'world'}
     actual = doc_engine.solve_placeholders(data, **dico)
     expected = 'hello world'
-    assert expected == actual
+    assert actual == expected
 
 
 def test_multiple_replace():
@@ -55,7 +55,7 @@ def test_multiple_replace():
     dico = {'who': 'world', 'what': 'goodbye'}
     actual = doc_engine.solve_placeholders(data, **dico)
     expected = 'goodbye world'
-    assert expected == actual
+    assert actual == expected
 
 
 def test_nested_replace():
@@ -63,10 +63,10 @@ def test_nested_replace():
     dico = {'my.prod.url': 'toto', 'my.dev.url': 'tata'}
     actual = doc_engine.solve_placeholders(data, **dico, stage='dev')
     expected = 'tata'
-    assert expected == actual
+    assert actual == expected
     actual = doc_engine.solve_placeholders(data, **dico, stage='prod')
     expected = 'toto'
-    assert expected == actual
+    assert actual == expected
 
 
 def test_list_single_replace():
@@ -74,7 +74,7 @@ def test_list_single_replace():
     dico = {'who': 'world'}
     actual = doc_engine.solve_placeholders(data, **dico)
     expected = ['hello world', 'goodbye world', 'alright']
-    assert expected == actual
+    assert actual == expected
 
 
 def test_list_multiple_replace():
@@ -82,7 +82,7 @@ def test_list_multiple_replace():
     dico = {'who': 'world', 'what': 'goodbye', 'where': 'earth'}
     actual = doc_engine.solve_placeholders(data, **dico)
     expected = ['goodbye world', 'earth world', 'alright']
-    assert expected == actual
+    assert actual == expected
 
 
 def test_list_nested_replace():
@@ -92,10 +92,10 @@ def test_list_nested_replace():
 
     actual = doc_engine.solve_placeholders(data, **dico, stage='dev')
     expected = ['tata', 'admin']
-    assert expected == actual
+    assert actual == expected
     actual = doc_engine.solve_placeholders(data, **dico, stage='prod')
     expected = ['toto', 'admin@admin']
-    assert expected == actual
+    assert actual == expected
 
 
 def test_list_deep_nested_replace():
@@ -105,10 +105,10 @@ def test_list_deep_nested_replace():
 
     actual = doc_engine.solve_placeholders(data, **dico, stage='dev')
     expected = [{'aDictKey': 'tata'}, 'admin']
-    assert expected == actual
+    assert actual == expected
     actual = doc_engine.solve_placeholders(data, **dico, stage='prod')
     expected = [{'aDictKey': 'toto'}, 'admin@admin']
-    assert expected == actual
+    assert actual == expected
 
 
 def test_dict_single_replace():
@@ -120,7 +120,7 @@ def test_dict_single_replace():
     expected = {'url': 'hello world',
                 'login': 'goodbye world',
                 'message': 'alright'}
-    assert expected == actual
+    assert actual == expected
 
 
 def test_dict_multiple_replace():
@@ -135,7 +135,7 @@ def test_dict_multiple_replace():
     expected = {'url': 'http://example.com:8080',
                 'login': 'admin',
                 'message': 'alright'}
-    assert expected == actual
+    assert actual == expected
 
 
 def test_dict_nested_replace():
@@ -162,12 +162,12 @@ def test_dict_nested_replace():
     actual = doc_engine.solve_placeholders(data, **dico, **dico_properties, stage='dev')
     expected = {'url': 'http://test.com:8080',
                 'login': 'admin'}
-    assert expected == actual
+    assert actual == expected
 
     actual = doc_engine.solve_placeholders(data, **dico, **dico_properties, stage='prod')
     expected = {'url': 'https://example.com:443',
                 'login': 'admin@example.com'}
-    assert expected == actual
+    assert actual == expected
 
 
 def test_dict_deep_nested_replace():
@@ -214,7 +214,7 @@ def test_dict_deep_nested_replace():
             }
         }
     }
-    assert expected == actual
+    assert actual == expected
 
     actual = doc_engine.solve_placeholders(data, **dico, **dico_properties, stage='prod')
     expected = {
@@ -229,4 +229,4 @@ def test_dict_deep_nested_replace():
             }
         }
     }
-    assert expected == actual
+    assert actual == expected

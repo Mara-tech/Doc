@@ -68,7 +68,6 @@ def get_envs_event():
 
 def test_get_environments(get_envs_event, mocker):
     ret = app.app(get_envs_event, "")
-    data = json.loads(ret["body"])
 
     assert ret["statusCode"] == 200
     assert ret["body"] is not None
@@ -91,7 +90,6 @@ def test_get_scenarii(get_scenarii_event_and_expected, mocker):
     req = get_scenarii_event_and_expected[0]
     expected = get_scenarii_event_and_expected[1]
     ret = app.app(req, "")
-    data = json.loads(ret["body"])
 
     assert ret["statusCode"] == 200
     assert ret["body"] is not None
@@ -131,7 +129,6 @@ def test_get_properties(get_properties_event_and_expected, mocker):
     req = get_properties_event_and_expected[0]
     expected = get_properties_event_and_expected[1]
     ret = app.app(req, "")
-    data = json.loads(ret["body"])
 
     assert ret["statusCode"] == 200
     assert ret["body"] is not None
@@ -164,7 +161,7 @@ def get_scenario_event_and_expected(request):
                         'OK': [
                             {'name': 'github-user-info'}
                         ],
-                        'KO': "${scenarii.get-public-ip}" if resolve_placeholder_query_param is False
+                        'KO': '${scenarii.get-public-ip}' if resolve_placeholder_query_param is False
                         else [{'name': 'public-ip'}]
                     }
                 },
@@ -172,6 +169,9 @@ def get_scenario_event_and_expected(request):
                     'name': 'aws-s3-ls',
                     'next-if': {
                         'KO': [
+                            {'name': 'aws-cli-version'}
+                        ],
+                        'UNDEFINED': [
                             {'name': 'aws-cli-version'}
                         ]
                     }
@@ -188,7 +188,6 @@ def test_get_scenario(get_scenario_event_and_expected, mocker):
     expected = get_scenario_event_and_expected[1]
     expected_status_code = get_scenario_event_and_expected[2]
     ret = app.app(req, "")
-    data = json.loads(ret["body"])
 
     assert ret["statusCode"] == expected_status_code
     assert ret["body"] is not None

@@ -1,7 +1,7 @@
 import yaml
 import doc_log as log
 import utils
-
+import time
 
 def parameter(param):
     return '${' + param + '}'
@@ -66,7 +66,63 @@ def solve_placeholders(data, **kwargs):
         raise NotImplementedError(f'Data {data} of type {type(data)} is not handled by solve_placeholders')
 
 
-class DocEngine():
+CONDITIONAL_NEXT_STEP_KEY = 'next-if'
+EXPLODE_SPLIT = ','
+
+
+def should_explode(conditions: str):
+    return EXPLODE_SPLIT in conditions
+
+
+def explode_next_if_steps(step_list: list):
+    if not isinstance(step_list, list):
+        # parameter can be a string in this example case :
+        # next-if:
+        #   OK: ${scenarii.shortcut}
+        # The DocEngine.get_scenario() method handle these placeholders
+        return step_list
+
+    exploded_list = []
+    for step in step_list:  # step is a dict
+        exploded_step = {}
+        if CONDITIONAL_NEXT_STEP_KEY in step:
+            for k, v in step.items():
+                #  k is usually one of ['name', 'type', 'next-if'], but also any other property (with value of any kind)
+                if k == CONDITIONAL_NEXT_STEP_KEY:
+                    exploded_condition = {}
+                    for conditions, underlying_steps in v.items():
+                        if should_explode(conditions):
+                            for single_condition in conditions.split(EXPLODE_SPLIT):
+                                exploded_condition[single_condition.strip()] = explode_next_if_steps(underlying_steps)
+                        else:
+                            exploded_condition[conditions] = explode_next_if_steps(underlying_steps)
+                    exploded_step[CONDITIONAL_NEXT_STEP_KEY] = exploded_condition
+                else:
+                    exploded_step[k] = v
+        else:
+            # step does not contain next-if => easy copy
+            exploded_step = step
+        exploded_list.append(exploded_step)
+    return exploded_list
+
+
+def explode_next_if_condition(scenarii: dict):
+    exploded_scenarii = {}
+    if scenarii:
+        for scenario_name, scenario in scenarii.items():  # scenario is a list of steps
+            exploded_scenarii[scenario_name] = explode_next_if_steps(scenario)
+    return exploded_scenarii
+
+
+def next_steps(step: dict, last_step_status: str):
+    if not step or not last_step_status:
+        return []
+    conditional_next_dict = step.get(CONDITIONAL_NEXT_STEP_KEY, {})
+    if last_step_status in conditional_next_dict:
+        return conditional_next_dict[last_step_status]
+
+
+class DocEngine:
 
     def __init__(self, conf_filename):
         super(DocEngine, self).__init__()
@@ -100,7 +156,7 @@ class DocEngine():
 
     @property
     def scenarii(self):
-        return self.doc_conf.get('scenarii', {})
+        return explode_next_if_condition(self.doc_conf.get('scenarii', {}))
 
     def get_environments(self, **kwargs):
         return list(k for k, v in self.environments.items())
@@ -147,3 +203,15 @@ class DocEngine():
             return solve_placeholders(self.scenarii[scenario_name], **self.properties, scenarii=self.scenarii, env=env)
         else:
             return self.scenarii[scenario_name]
+
+    def run_scenario(self, scenario_name, env='default', solving_ph=True, **kwargs):
+        scenario = self.get_scenario(scenario_name, env, solving_ph, **kwargs)
+        output = {'scenario': scenario_name, 'environment': env, 'timestamp': int(time.time())}
+        self.run(scenario, output, **kwargs)
+        return output
+
+    def run(self, scenario: list, output: dict, **kwargs):
+        for step in scenario:
+            step_output, step_status = self.execute(step, **kwargs)
+            self.write(step_output, output, **kwargs)
+            self.run(next_steps(step, step_status), output, **kwargs)

@@ -11,7 +11,7 @@ properties:
 services:
   public-ip:
     type: api.get.info # api.rest.get.check / cmd.status / cmd.parse / api.graphql.get
-    url : ${ipify.url}
+    url: ${ipify.url}
   github-user-info:
     url: ${github.${env}.base_url}/users/${username}
   github-up:
@@ -26,7 +26,7 @@ services:
     url: ${orchestrator-ra.${env}.url}
 
 scenarii:
-  github-and-aws :
+  github-and-aws:
     - name: github-up
       next-if:
         OK:
@@ -34,7 +34,7 @@ scenarii:
         KO: ${scenarii.get-public-ip}
     - name: aws-s3-ls
       next-if:
-        KO:
+        KO, UNDEFINED:
           - name: aws-cli-version
   github-only:
     - name: github-up
