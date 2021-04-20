@@ -233,22 +233,8 @@ class DocEngine:
     def get_environments(self, **kwargs):
         return list(k for k, v in self.environments.items())
 
-    def get_services(self, args, **kwargs):
-        """
-        TODO by introspection of scenarii
-        :param args:
-        :return:
-        """
-        # if 'environment' not in args:
-        #     raise KeyError("Expected key 'environment' not provided.")
-        # requested_env = args['environment']
-        # if requested_env not in self.environments:
-        #     raise KeyError(f"Environment {requested_env} is not configured, thus unknown.")
-        # requested_env_conf = self.environments[requested_env]
-        # if 'services' not in requested_env_conf:
-        #     raise KeyError(f"Environment {requested_env} has no configured services. Please add a 'services' entry in configuration.")
-        # return self.environments[requested_env]['services']
-        return {}
+    def get_services(self, **kwargs):
+        return solve_placeholders(self.services, **self.flattened_properties, **kwargs)
 
     def get_scenarii(self, requested_env, **kwargs):
         if requested_env not in self.environments:

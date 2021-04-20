@@ -72,13 +72,13 @@ class GetEnvironments(Resource):
          responses={200: 'list of services'})
 class GetServices(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument('environment', help="A single environment name", required=True)
+    parser.add_argument('environment', help="A single environment name. Will replace ${env} variable.", required=False)
 
     @api.expect(parser)
     def get(self):
         args = self.parser.parse_args()
         try:
-            return format_response(doc.get_services(args))
+            return format_response(doc.get_services(env=args['environment']))
         except Exception as exc:
             api.abort(500, exc)
 
@@ -129,7 +129,7 @@ class GetProperties(Resource):
 @api.route('/scenario/<string:scenario_name>')
 class Scenario(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument('environment', help="A single environment name", required=False)
+    parser.add_argument('environment', help="A single environment name. Will replace ${env} variable.", required=False)
 
     @api.doc(description="Get details on scenario plan",
              responses={200: 'scenario details'})

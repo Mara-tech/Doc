@@ -141,7 +141,7 @@ def test_get_properties(get_properties_event_and_expected, mocker):
 
 @pytest.fixture(params=list((scenario, env)
                             for scenario in ['github-and-aws']
-                            for env in [None, 'prod','dev']))
+                            for env in [None, 'prod', 'dev']))
 def get_scenario_event_and_expected(request):
     scenario_name = request.param[0]
     env_query_param = request.param[1]
@@ -159,19 +159,21 @@ def get_scenario_event_and_expected(request):
             'github-and-aws': [
                 {
                     'service': 'github-up',
+                    'type': 'api.rest',
                     'url': '${github.${env}.base_url}' if env_query_param is None
                     else 'https://api.github.com',
                     'next-if': {
                         'OK': [
                             {
                                 'service': 'github-user-info',
+                                'type': 'api.rest',
                                 'url': '${github.${env}.base_url}/users/${username}' if env_query_param is None
                                 else 'https://api.github.com/users/${username}'
                             }
                         ],
                         'KO': [
                             {
-                                'service': 'public-ip', 'type': 'api.get.info', 'url': 'https://api.ipify.org/?format=json'
+                                'service': 'public-ip', 'type': 'api.rest.get', 'url': 'https://api.ipify.org/?format=json'
                             }
                         ]
                     }
@@ -208,6 +210,60 @@ def test_get_scenario(get_scenario_event_and_expected, mocker):
     req = get_scenario_event_and_expected[0]
     expected = get_scenario_event_and_expected[1]
     expected_status_code = get_scenario_event_and_expected[2]
+    ret = app.app(req, "")
+
+    assert ret["body"] is not None
+    assert json.loads(ret["body"]) == expected
+    assert ret["statusCode"] == expected_status_code
+
+
+@pytest.fixture(params=[None, 'prod', 'dev'])
+def get_services_event_and_expected(request):
+    env_query_param = request.param
+    qp = {}
+    if env_query_param is not None:
+        qp['environment'] = env_query_param
+
+    event = generate_event(f"/doc/services",
+                           query_params=qp)
+    expected = {
+        'public-ip': {
+            'type': 'api.rest.get',
+            'url': 'https://api.ipify.org/?format=json'
+        },
+        'github-user-info': {
+            'type': 'api.rest',
+            'url': '${github.${env}.base_url}/users/${username}' if env_query_param is None
+            else 'https://api.github.com/users/${username}' if env_query_param == 'prod'
+            else 'https://dev.api.github.com/users/${username}' if env_query_param == 'dev'
+            else None
+        },
+        'github-up': {
+            'type': 'api.rest',
+            'url': '${github.${env}.base_url}' if env_query_param is None
+            else 'https://api.github.com' if env_query_param == 'prod'
+            else 'https://dev.api.github.com' if env_query_param == 'dev'
+            else None
+        },
+        'aws-cli-version': {
+            'type': 'cmd',
+            'cmd': 'aws --version'
+        },
+        'aws-s3-ls': {
+            'type': 'cmd',
+            'cmd': 'aws s3 ls'
+        },
+
+    }
+    expected_status_code = 200
+
+    return event, expected, expected_status_code
+
+
+def test_get_services(get_services_event_and_expected, mocker):
+    req = get_services_event_and_expected[0]
+    expected = get_services_event_and_expected[1]
+    expected_status_code = get_services_event_and_expected[2]
     ret = app.app(req, "")
 
     assert ret["body"] is not None
