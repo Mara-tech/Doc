@@ -102,6 +102,7 @@ def test_explode_condition_next_double():
     }
     assert actual == expected
 
+
 def test_explode_condition_explode():
     data = {
         'scenario1': [

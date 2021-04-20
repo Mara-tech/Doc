@@ -2,7 +2,11 @@ import json
 import pytest
 import app
 
-app.set_conf_filename(str(__file__).replace('.py', '.yml'))
+
+@pytest.fixture(autouse=True)
+def setup_test():
+    app.set_conf_filename(str(__file__).replace('.py', '.yml'))
+    yield
 
 
 def generate_event(path='/doc/hello', method='GET', query_params=None):
@@ -69,9 +73,9 @@ def get_envs_event():
 def test_get_environments(get_envs_event, mocker):
     ret = app.app(get_envs_event, "")
 
-    assert ret["statusCode"] == 200
     assert ret["body"] is not None
     assert json.loads(ret["body"]) == ["prod", "dev"]
+    assert ret["statusCode"] == 200
 
 
 @pytest.fixture(params=['prod', 'dev'])
@@ -91,9 +95,9 @@ def test_get_scenarii(get_scenarii_event_and_expected, mocker):
     expected = get_scenarii_event_and_expected[1]
     ret = app.app(req, "")
 
-    assert ret["statusCode"] == 200
     assert ret["body"] is not None
     assert json.loads(ret["body"]) == expected
+    assert ret["statusCode"] == 200
 
 
 @pytest.fixture(params=[None, False, True])
@@ -108,17 +112,17 @@ def get_properties_event_and_expected(request):
                 {'url': 'https://api.ipify.org/?format=json'},
             'github': {
                 'prod': {
-                    'base_url': 'https://api.github.com/'
+                    'base_url': 'https://api.github.com'
                 },
                 'dev': {
-                    'base_url': 'https://dev.api.github.com/'
+                    'base_url': 'https://dev.api.github.com'
                 }
             }
         },
         True: {
             'ipify.url': 'https://api.ipify.org/?format=json',
-            'github.prod.base_url': 'https://api.github.com/',
-            'github.dev.base_url': 'https://dev.api.github.com/'
+            'github.prod.base_url': 'https://api.github.com',
+            'github.dev.base_url': 'https://dev.api.github.com'
         }
     }[flatten_query_param if flatten_query_param is not None else DEFAULT_BEHAVIOR]
 
@@ -130,20 +134,18 @@ def test_get_properties(get_properties_event_and_expected, mocker):
     expected = get_properties_event_and_expected[1]
     ret = app.app(req, "")
 
-    assert ret["statusCode"] == 200
     assert ret["body"] is not None
     assert json.loads(ret["body"]) == expected
+    assert ret["statusCode"] == 200
 
 
-@pytest.fixture(params=list((scenario, env, resolve)
+@pytest.fixture(params=list((scenario, env)
                             for scenario in ['github-and-aws']
-                            for env in [None, 'prod','dev']
-                            for resolve in [True, False]))
+                            for env in [None, 'prod','dev']))
 def get_scenario_event_and_expected(request):
     scenario_name = request.param[0]
     env_query_param = request.param[1]
-    resolve_placeholder_query_param = request.param[2]
-    qp = {'resolve_placeholders': resolve_placeholder_query_param}
+    qp = {}
     if env_query_param is not None:
         qp['environment'] = env_query_param
 
@@ -156,23 +158,42 @@ def get_scenario_event_and_expected(request):
         expected = {
             'github-and-aws': [
                 {
-                    'name': 'github-up',
+                    'service': 'github-up',
+                    'url': '${github.${env}.base_url}' if env_query_param is None
+                    else 'https://api.github.com',
                     'next-if': {
                         'OK': [
-                            {'name': 'github-user-info'}
+                            {
+                                'service': 'github-user-info',
+                                'url': '${github.${env}.base_url}/users/${username}' if env_query_param is None
+                                else 'https://api.github.com/users/${username}'
+                            }
                         ],
-                        'KO': '${scenarii.get-public-ip}' if resolve_placeholder_query_param is False
-                        else [{'name': 'public-ip'}]
+                        'KO': [
+                            {
+                                'service': 'public-ip', 'type': 'api.get.info', 'url': 'https://api.ipify.org/?format=json'
+                            }
+                        ]
                     }
                 },
                 {
-                    'name': 'aws-s3-ls',
+                    'service': 'aws-s3-ls',
+                    'type': 'cmd',
+                    'cmd': 'aws s3 ls',
                     'next-if': {
                         'KO': [
-                            {'name': 'aws-cli-version'}
+                            {
+                                'service': 'aws-cli-version',
+                                'type': 'cmd',
+                                'cmd': 'aws --version'
+                            }
                         ],
                         'UNDEFINED': [
-                            {'name': 'aws-cli-version'}
+                            {
+                                'service': 'aws-cli-version',
+                                'type': 'cmd',
+                                'cmd': 'aws --version'
+                            }
                         ]
                     }
                 }
@@ -189,6 +210,6 @@ def test_get_scenario(get_scenario_event_and_expected, mocker):
     expected_status_code = get_scenario_event_and_expected[2]
     ret = app.app(req, "")
 
-    assert ret["statusCode"] == expected_status_code
     assert ret["body"] is not None
     assert json.loads(ret["body"]) == expected
+    assert ret["statusCode"] == expected_status_code

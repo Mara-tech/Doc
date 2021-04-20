@@ -3,9 +3,9 @@ properties:
     url: https://api.ipify.org/?format=json
   github:
       prod:
-        base_url: https://api.github.com
+        base_url: https://api.github.com/
       dev:
-        base_url: https://dev.api.github.com
+        base_url: https://dev.api.github.com/
 
 
 services:
@@ -15,6 +15,7 @@ services:
   github-user-info:
     url: ${github.${env}.base_url}/users/${username}
   github-up:
+    type: api.rest.get
     url: ${github.${env}.base_url}
   aws-cli-version:
     type: cmd

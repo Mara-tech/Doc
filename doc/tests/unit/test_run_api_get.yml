@@ -1,0 +1,81 @@
+properties:
+  swapi:
+    base_url: https://swapi.dev/api
+    people_url: ${swapi.base_url}/people/${person_id}/
+    planets_url: ${swapi.base_url}/planets/${planet_id}/
+    starships_url: ${swapi.base_url}/starships/${starship_id}/
+
+
+services:
+  check_person:
+    type: api.rest.get.extract
+    url: ${swapi.people_url}
+    extract: name
+  check_millennium_falcon:
+    type: api.rest.get.extract
+    url: ${swapi.starships_url}
+    extract: name
+    starship_id: 10
+  check_alderaan:
+    type: api.rest.get.extract
+    extract:
+      - name
+      - terrain
+    url: ${swapi.planets_url}
+    planet_id: 2
+
+scenarii:
+  check_obiwan:
+    - service: check_person
+      person_id: 10
+  check_flight:
+    - service: check_person
+      name: captain
+      person_id: 14
+      next-if:
+        OK:
+          - service: check_millennium_falcon
+            name: ship
+            next-if:
+              OK:
+                - service: check_alderaan
+                  name: destination
+    - service: check_person
+      name: crewmate
+      person_id: 13
+  check_vader:
+    - service: check_person
+      person_id: 4
+  check_anakin:
+    - service: check_person
+      name: father
+      person_id: 11
+      next-if:
+        MASTER: ${scenarii.check_obiwan}
+        WIFE:
+          - service: check_person
+            person_id: 35
+        DARK-SIDE: ${scenarii.check_vader}
+        CHILDREN, OK:
+          - service: check_person
+            name: son
+            person_id: 1
+          - service: check_person
+            name: daughter
+            person_id: 5
+
+
+environments:
+  empire:
+    scenarii:
+    - check_flight
+    - check_vader
+    properties:
+      Palpatine: Darth Sidious
+  republic:
+    scenarii:
+    - check_obiwan
+    - check_anakin
+    properties:
+      Palpatine: Senator
+

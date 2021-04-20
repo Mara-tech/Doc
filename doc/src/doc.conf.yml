@@ -3,9 +3,9 @@ properties:
     url: https://api.ipify.org/?format=json
   github:
       prod:
-        base_url: https://api.github.com/
+        base_url: https://api.github.com
       dev:
-        base_url: https://dev.api.github.com/
+        base_url: https://dev.api.github.com
 
 
 services:

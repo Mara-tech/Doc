@@ -2,11 +2,8 @@ from flask_lambda import FlaskLambda
 import time
 from flask import request
 from flask_restplus import Api, Resource, fields, reqparse, inputs
-import yaml
-import json
 import doc_log as log
 from doc_engine import DocEngine
-
 
 conf_filename = 'doc.conf.yml'
 doc = DocEngine(conf_filename)
@@ -53,14 +50,15 @@ def format_response(data=None, status_code=200):
 # --------------------
 @api.route('/hello')
 @api.doc(description="testing endpoint",
-              responses={200: 'test ok'})
+         responses={200: 'test ok'})
 class HelloWorld(Resource):
     def get(self):
         return format_response(f"Hello World {int(time.time())}")
 
+
 @api.route('/environments')
 @api.doc(description="Get all defined environments",
-              responses={200: 'list of environments'})
+         responses={200: 'list of environments'})
 class GetEnvironments(Resource):
     def get(self):
         try:
@@ -71,7 +69,7 @@ class GetEnvironments(Resource):
 
 @api.route('/services')
 @api.doc(description="Get services for selected environment",
-              responses={200: 'list of services'})
+         responses={200: 'list of services'})
 class GetServices(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('environment', help="A single environment name", required=True)
@@ -86,11 +84,11 @@ class GetServices(Resource):
 
 
 @api.route('/<string:environment>/scenarii')
-@api.doc(description="Get scenarii for selected environment",
-              responses={200: 'list of scenarii for the selected environment'})
 @api.param('environment', 'A single environment name', default='dev')
-class GetScenarii(Resource):
+class Scenarii(Resource):
 
+    @api.doc(description="Get scenarii for selected environment",
+             responses={200: 'list of scenarii for the selected environment'})
     def get(self, environment):
         try:
             return format_response(doc.get_scenarii(environment))
@@ -99,13 +97,25 @@ class GetScenarii(Resource):
         except Exception as exc:
             api.abort(500, exc)
 
+    @api.doc(description="Run scenarii for selected environment",
+             responses={200: 'List of each scenario execution results for the selected environment'})
+    def post(self, environment):
+        try:
+            return format_response(doc.run_scenarii(environment))
+        except LookupError as br:
+            return format_response({'error': str(br)}, 400)
+        except Exception as exc:
+            api.abort(500, exc)
+
 
 @api.route('/properties')
 @api.doc(description="Get properties dictionary",
-              responses={200: 'list of properties'})
+         responses={200: 'list of properties'})
 class GetProperties(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument('flat', type=inputs.boolean, help="Whether to keep tree structure (default) or flatten as a map.", required=False, default=False)
+    parser.add_argument('flat', type=inputs.boolean,
+                        help="Whether to keep tree structure (default) or flatten as a map.", required=False,
+                        default=False)
 
     @api.expect(parser)
     def get(self):
@@ -117,28 +127,31 @@ class GetProperties(Resource):
 
 
 @api.route('/scenario/<string:scenario_name>')
-@api.doc(description="Get details on scenario plan",
-              responses={200: 'scenario details'})
 class Scenario(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('environment', help="A single environment name", required=False)
-    parser.add_argument('resolve_placeholders', type=inputs.boolean, help="Whether to replace placeholders by values, when possible.", required=False, default=True)
 
+    @api.doc(description="Get details on scenario plan",
+             responses={200: 'scenario details'})
     @api.expect(parser)
     def get(self, scenario_name):
         args = self.parser.parse_args()
         try:
-            return format_response(doc.get_scenario(scenario_name, env=args['environment'], solving_ph=args['resolve_placeholders']))
+            return format_response(
+                doc.get_scenario(scenario_name, env=args['environment']))
         except LookupError as br:
             return format_response({'error': str(br)}, 400)
         except Exception as exc:
             api.abort(500, exc)
 
+    @api.doc(description="Run scenario",
+             responses={200: 'Scenario execution results'})
     @api.expect(parser)
     def post(self, scenario_name):
         args = self.parser.parse_args()
         try:
-            return format_response(doc.run_scenario(scenario_name, env=args['environment'], solving_ph=args['resolve_placeholders']))
+            return format_response(
+                doc.run_scenario(scenario_name, env=args['environment'], solving_ph=args['resolve_placeholders']))
         except LookupError as br:
             return format_response({'error': str(br)}, 400)
         except Exception as exc:
