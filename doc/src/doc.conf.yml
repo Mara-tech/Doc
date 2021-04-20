@@ -27,22 +27,22 @@ services:
 
 scenarii:
   github-and-aws:
-    - name: github-up
+    - service: github-up
       next-if:
         OK:
-          - name: github-user-info
+          - service: github-user-info
         KO: ${scenarii.get-public-ip}
-    - name: aws-s3-ls
+    - service: aws-s3-ls
       next-if:
         KO, UNDEFINED:
-          - name: aws-cli-version
+          - service: aws-cli-version
   github-only:
-    - name: github-up
+    - service: github-up
       next-if:
         OK:
-            - name: github-user-info
+            - service: github-user-info
   get-public-ip:
-    - name: public-ip
+    - service: public-ip
 
 
 environments:

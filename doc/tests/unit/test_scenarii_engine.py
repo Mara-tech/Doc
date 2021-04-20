@@ -12,7 +12,7 @@ def test_explode_condition_simple():
     data = {
         'scenario1': [
             {
-                'name': 'stepA',
+                'service': 'stepA',
             }
         ]
     }
@@ -20,7 +20,7 @@ def test_explode_condition_simple():
     expected = {
         'scenario1': [
             {
-                'name': 'stepA',
+                'service': 'stepA',
             }
         ]
     }
@@ -31,11 +31,11 @@ def test_explode_condition_next_simple():
     data = {
         'scenario1': [
             {
-                'name': 'stepA',
+                'service': 'stepA',
                 'next-if': {
                     'OK': [
                         {
-                            'name': 'stepAOK'
+                            'service': 'stepAOK'
                         }
                     ]
                 }
@@ -46,11 +46,11 @@ def test_explode_condition_next_simple():
     expected = {
         'scenario1': [
             {
-                'name': 'stepA',
+                'service': 'stepA',
                 'next-if': {
                     'OK': [
                         {
-                            'name': 'stepAOK'
+                            'service': 'stepAOK'
                         }
                     ]
                 }
@@ -64,16 +64,16 @@ def test_explode_condition_next_double():
     data = {
         'scenario1': [
             {
-                'name': 'stepA',
+                'service': 'stepA',
                 'next-if': {
                     'OK': [
                         {
-                            'name': 'stepAOK'
+                            'service': 'stepAOK'
                         }
                     ],
                     'KO': [
                         {
-                            'name': 'stepAKO'
+                            'service': 'stepAKO'
                         }
                     ]
                 }
@@ -84,16 +84,16 @@ def test_explode_condition_next_double():
     expected = {
         'scenario1': [
             {
-                'name': 'stepA',
+                'service': 'stepA',
                 'next-if': {
                     'OK': [
                         {
-                            'name': 'stepAOK'
+                            'service': 'stepAOK'
                         }
                     ],
                     'KO': [
                         {
-                            'name': 'stepAKO'
+                            'service': 'stepAKO'
                         }
                     ]
                 }
@@ -107,16 +107,16 @@ def test_explode_condition_explode():
     data = {
         'scenario1': [
             {
-                'name': 'stepA',
+                'service': 'stepA',
                 'next-if': {
                     'OK, VALID': [
                         {
-                            'name': 'stepAOK'
+                            'service': 'stepAOK'
                         }
                     ],
                     'KO': [
                         {
-                            'name': 'stepAKO'
+                            'service': 'stepAKO'
                         }
                     ]
                 }
@@ -127,21 +127,21 @@ def test_explode_condition_explode():
     expected = {
         'scenario1': [
             {
-                'name': 'stepA',
+                'service': 'stepA',
                 'next-if': {
                     'OK': [
                         {
-                            'name': 'stepAOK'
+                            'service': 'stepAOK'
                         }
                     ],
                     'VALID': [
                         {
-                            'name': 'stepAOK'
+                            'service': 'stepAOK'
                         }
                     ],
                     'KO': [
                         {
-                            'name': 'stepAKO'
+                            'service': 'stepAKO'
                         }
                     ]
                 }
@@ -155,18 +155,18 @@ def test_explode_condition_explode_and_third_properties():
     data = {
         'scenario1': [
             {
-                'name': 'stepA',
+                'service': 'stepA',
                 'property': 'toto',
                 'next-if': {
                     'OK, VALID': [
                         {
-                            'name': 'stepAOK',
+                            'service': 'stepAOK',
                             'url': 'test.com'
                         }
                     ],
                     'KO': [
                         {
-                            'name': 'stepAKO',
+                            'service': 'stepAKO',
                             'tree': {
                                 'propA': 'aa',
                                 'propB': 'bb'
@@ -181,24 +181,24 @@ def test_explode_condition_explode_and_third_properties():
     expected = {
         'scenario1': [
             {
-                'name': 'stepA',
+                'service': 'stepA',
                 'property': 'toto',
                 'next-if': {
                     'OK': [
                         {
-                            'name': 'stepAOK',
+                            'service': 'stepAOK',
                             'url': 'test.com'
                         }
                     ],
                     'VALID': [
                         {
-                            'name': 'stepAOK',
+                            'service': 'stepAOK',
                             'url': 'test.com'
                         }
                     ],
                     'KO': [
                         {
-                            'name': 'stepAKO',
+                            'service': 'stepAKO',
                             'tree': {
                                 'propA': 'aa',
                                 'propB': 'bb'
@@ -216,20 +216,20 @@ def test_explode_condition_explode_nested():
     data = {
         'scenario1': [
             {
-                'name': 'stepA',
+                'service': 'stepA',
                 'next-if': {
                     'OK, VALID': [
                         {
-                            'name': 'stepAOK',
+                            'service': 'stepAOK',
                             'next-if': {
                                 'OK': [
                                     {
-                                        'name': 'stepAOKOK'
+                                        'service': 'stepAOKOK'
                                     }
                                 ],
                                 'KO, ERROR': [
                                     {
-                                        'name': 'stepAOKKO',
+                                        'service': 'stepAOKKO',
                                         'someKey': 'theValue'
                                     }
                                 ]
@@ -238,19 +238,19 @@ def test_explode_condition_explode_nested():
                     ],
                     'KO': [
                         {
-                            'name': 'stepAKO',
+                            'service': 'stepAKO',
                             'next-if': {
                                 'OK': [
                                     {
-                                        'name': 'stepAKOOK1'
+                                        'service': 'stepAKOOK1'
                                     },
                                     {
-                                        'name': 'stepAKOOK2'
+                                        'service': 'stepAKOOK2'
                                     }
                                 ],
                                 'KO, UNDEFINED': [
                                     {
-                                        'name': 'stepAKOKO'
+                                        'service': 'stepAKOKO'
                                     }
                                 ]
                             }
@@ -264,26 +264,26 @@ def test_explode_condition_explode_nested():
     expected = {
         'scenario1': [
             {
-                'name': 'stepA',
+                'service': 'stepA',
                 'next-if': {
                     'OK': [
                         {
-                            'name': 'stepAOK',
+                            'service': 'stepAOK',
                             'next-if': {
                                 'OK': [
                                     {
-                                        'name': 'stepAOKOK'
+                                        'service': 'stepAOKOK'
                                     }
                                 ],
                                 'KO': [
                                     {
-                                        'name': 'stepAOKKO',
+                                        'service': 'stepAOKKO',
                                         'someKey': 'theValue'
                                     }
                                 ],
                                 'ERROR': [
                                     {
-                                        'name': 'stepAOKKO',
+                                        'service': 'stepAOKKO',
                                         'someKey': 'theValue'
                                     }
                                 ]
@@ -292,22 +292,22 @@ def test_explode_condition_explode_nested():
                     ],
                     'VALID': [
                         {
-                            'name': 'stepAOK',
+                            'service': 'stepAOK',
                             'next-if': {
                                 'OK': [
                                     {
-                                        'name': 'stepAOKOK'
+                                        'service': 'stepAOKOK'
                                     }
                                 ],
                                 'KO': [
                                     {
-                                        'name': 'stepAOKKO',
+                                        'service': 'stepAOKKO',
                                         'someKey': 'theValue'
                                     }
                                 ],
                                 'ERROR': [
                                     {
-                                        'name': 'stepAOKKO',
+                                        'service': 'stepAOKKO',
                                         'someKey': 'theValue'
                                     }
                                 ]
@@ -316,24 +316,24 @@ def test_explode_condition_explode_nested():
                     ],
                     'KO': [
                         {
-                            'name': 'stepAKO',
+                            'service': 'stepAKO',
                             'next-if': {
                                 'OK': [
                                     {
-                                        'name': 'stepAKOOK1'
+                                        'service': 'stepAKOOK1'
                                     },
                                     {
-                                        'name': 'stepAKOOK2'
+                                        'service': 'stepAKOOK2'
                                     }
                                 ],
                                 'KO': [
                                     {
-                                        'name': 'stepAKOKO'
+                                        'service': 'stepAKOKO'
                                     }
                                 ],
                                 'UNDEFINED': [
                                     {
-                                        'name': 'stepAKOKO'
+                                        'service': 'stepAKOKO'
                                     }
                                 ]
                             }
@@ -362,51 +362,51 @@ def test_next_step_empty():
 
 def test_next_step_simple():
     data = {
-        'name': 'root',
+        'service': 'root',
         'next-if': {
                 'OK': [
                     {
-                        'name': 'nextOK'
+                        'service': 'nextOK'
                     }
                 ],
                 'KO': [
                     {
-                        'name': 'nextKO'
+                        'service': 'nextKO'
                     }
                 ]
             }
     }
     actual = doc_engine.next_steps(data, 'OK')
-    expected = [{'name': 'nextOK'}]
+    expected = [{'service': 'nextOK'}]
     assert actual == expected
     actual = doc_engine.next_steps(data, 'KO')
-    expected = [{'name': 'nextKO'}]
+    expected = [{'service': 'nextKO'}]
     assert actual == expected
 
 
 def test_next_step_nested():
     data = {
-        'name': 'root',
+        'service': 'root',
         'next-if': {
             'OK': [
                 {
-                    'name': 'nextOK',
+                    'service': 'nextOK',
                     'next-if': {
                         'OK': [
                             {
-                                'name': 'nextOKnextOK1'
+                                'service': 'nextOKnextOK1'
                             },
                             {
-                                'name': 'nextOKnextOK2'
+                                'service': 'nextOKnextOK2'
                             }
                         ],
                         'KO': [
                             {
-                                'name': 'nextOKnextKO',
+                                'service': 'nextOKnextKO',
                                 'next-if': {
                                     'OK': [
                                         {
-                                            'name': 'nextOKnextKOnextOK'
+                                            'service': 'nextOKnextKOnextOK'
                                         }
                                     ]
                                 }
@@ -417,7 +417,7 @@ def test_next_step_nested():
             ],
             'KO': [
                 {
-                    'name': 'nextKO'
+                    'service': 'nextKO'
                 }
             ]
         }
@@ -425,23 +425,23 @@ def test_next_step_nested():
     actual = doc_engine.next_steps(data, 'OK')
     expected = [
         {
-            'name': 'nextOK',
+            'service': 'nextOK',
             'next-if': {
                 'OK': [
                     {
-                        'name': 'nextOKnextOK1'
+                        'service': 'nextOKnextOK1'
                     },
                     {
-                        'name': 'nextOKnextOK2'
+                        'service': 'nextOKnextOK2'
                     }
                 ],
                 'KO': [
                     {
-                        'name': 'nextOKnextKO',
+                        'service': 'nextOKnextKO',
                         'next-if': {
                             'OK': [
                                 {
-                                    'name': 'nextOKnextKOnextOK'
+                                    'service': 'nextOKnextKOnextOK'
                                 }
                             ]
                         }
@@ -455,10 +455,10 @@ def test_next_step_nested():
     actual = doc_engine.next_steps(actual[0], 'OK')
     expected = [
         {
-            'name': 'nextOKnextOK1'
+            'service': 'nextOKnextOK1'
         },
         {
-            'name': 'nextOKnextOK2'
+            'service': 'nextOKnextOK2'
         }
     ]
     assert actual == expected
@@ -466,11 +466,11 @@ def test_next_step_nested():
     actual = doc_engine.next_steps(doc_engine.next_steps(data, 'OK')[0], 'KO')
     expected = [
         {
-            'name': 'nextOKnextKO',
+            'service': 'nextOKnextKO',
             'next-if': {
                 'OK': [
                     {
-                        'name': 'nextOKnextKOnextOK'
+                        'service': 'nextOKnextKOnextOK'
                     }
                 ]
             }
@@ -479,5 +479,5 @@ def test_next_step_nested():
     assert actual == expected
 
     actual = doc_engine.next_steps(doc_engine.next_steps(doc_engine.next_steps(data, 'OK')[0], 'KO')[0], 'OK')
-    expected = [{'name': 'nextOKnextKOnextOK'}]
+    expected = [{'service': 'nextOKnextKOnextOK'}]
     assert actual == expected
