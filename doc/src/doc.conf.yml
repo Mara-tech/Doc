@@ -10,16 +10,20 @@ properties:
 
 services:
   public-ip:
-    type: api.get.info # api.rest.get.check / cmd.status / cmd.parse / api.graphql.get
+    type: api.rest.get # api.rest.get.check / cmd.status / cmd.parse / api.graphql.get
     url: ${ipify.url}
   github-user-info:
+    type: api.rest
     url: ${github.${env}.base_url}/users/${username}
   github-up:
+    type: api.rest
     url: ${github.${env}.base_url}
   aws-cli-version:
-    command: "aws --version"
+    type: cmd
+    cmd: "aws --version"
   aws-s3-ls:
-    command: "aws s3 ls"
+    type: cmd
+    cmd: "aws s3 ls"
   orchestrator:
     url: ${orchestrator.${env}.url}
   orchestrator-ra:
